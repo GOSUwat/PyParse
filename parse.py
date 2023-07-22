@@ -11,7 +11,7 @@ PAUSE_DURATION_SECONDS = 5
 
 
 
-def get_source(url):  #парсинг всей страницы
+def get_source(u_id,url):  #парсинг всей страницы
     try:
         service = Service(executable_path=ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service)
@@ -23,11 +23,14 @@ def get_source(url):  #парсинг всей страницы
               
     except Exception as e:
         print(e)
+        driver.close()   
+        driver.quit()
     finally:     
         driver.close()   
         driver.quit()
+        get_items(u_id,url)
 
-def get_items(): # вытаскивание обьявлений по названию класса 
+def get_items(u_id,URL): # вытаскивание обьявлений по названию класса 
     try:     
         with open("text.html",encoding="utf-8") as file:
             src = file.read()
@@ -39,7 +42,8 @@ def get_items(): # вытаскивание обьявлений по назва
             
             item_href = item.find("a",class_="iva-item-sliderLink-uLz1v").get("href")
             db = DB()
-            db.db_connect(str(item),str(item_href))
+            db.db_connect(u_id,URL,str(item_href),str(item))
+            #return str(item_href),str(item),len(item_divs)
                 
     except Exception as e:
         print(e)
@@ -49,10 +53,10 @@ def get_items(): # вытаскивание обьявлений по назва
 
 
   
-def main():
-    get_source(url="https://www.avito.ru/kazan/avtomobili/audi-ASgBAgICAUTgtg3elyg?cd=1&radius=200&searchRadius=200")
-
-
-if __name__ == '__main__':
-    main()
-    get_items()
+#def main():
+#    get_source(url="https://www.avito.ru/kazan/avtomobili/audi-ASgBAgICAUTgtg3elyg?cd=1&radius=200&searchRadius=200")
+#
+#
+#if __name__ == '__main__':
+#    main()
+#    get_items()
