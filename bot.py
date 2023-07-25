@@ -1,27 +1,46 @@
 import telebot 
-from db import DB
-from parse import get_source
+import config
+from parse import Parsing
+from db import FindOptimal
+from time import sleep
+from threading import Thread
+
 
 bot = telebot.TeleBot('')
 
-nick_name = ""
-parse_link = ""
-
 @bot.message_handler(content_types=['text'])
-
-
-def start(message):
-
-    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+def get_url(message):
+    
     if "https://www.avito.ru" in message.text:
-        db = DB()
-        URL = message.text
-        #get_source(url = URL)
-        get_source(message.from_user.id,URL)
-        #db.db_connect(message.from_user.id,URL,href,data)
-    #bot.send_message(message.from_user.id, f"{message.from_user.id}", reply_markup=markup)
-    
-    
-    
+        config.URL = message.text
+        config.U_ID = message.from_user.id
+        bot.send_message(config.U_ID,"Собирает не все обьявления, не удаляет старые. Присылает сообщение 1 раз в час.")
+        prs = Parsing()
+        prs.get_source()
         
-bot.polling(none_stop=True, interval=0)
+    
+
+def feedback():
+    x = FindOptimal()
+    prs = Parsing()
+    for user in x.get_users:
+        price,url,price_curr = x.find_min(user)
+        send_message(user,url,price,price_curr)
+        config.U_ID = user
+        config.URL = str(x.get_sUrl(user))
+        prs.get_source()
+        sleep(20)
+
+
+def send_message(user,url,price,price_curr):
+    try:
+        bot.send_message(int(user),f"Самое дешевое обьявление {url} по цене {price}{price_curr}")
+    except Exception as e:
+        print(e)
+        sleep(40)
+        
+
+
+
+    
+    
